@@ -1,0 +1,8 @@
+[package]
+name = "vimwiki-tagquery"
+version = "0.1.0"
+authors = ["Matt Snider <matt.snider@protonmail.com>"]
+edition = "2018"
+
+[dependencies]
+getopts = "0.2"
