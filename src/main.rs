@@ -1,7 +1,8 @@
 use getopts::Options;
 use std::env;
+use std::path::{PathBuf};
 
-const DEFAULT_TAGS_LOCATION: &str = "./.tags";
+const DEFAULT_TAGS_FILE: &str = ".tags";
 
 
 fn main() {
@@ -13,7 +14,7 @@ fn main() {
     opts.optopt(
         "f",
         "file",
-        &format!("the location of the tag file (defaults to {})", DEFAULT_TAGS_LOCATION),
+        &format!("the location of the tag file (defaults to {})", DEFAULT_TAGS_FILE),
         "FILEPATH"
     );
     opts.optflag("h", "help", "print this help menu");
@@ -32,17 +33,29 @@ fn main() {
     let query = if !matches.free.is_empty() {
         matches.free[0].clone()
     } else {
+        println!("Error: QUERY not specified");
         print_usage(&program, opts);
         return;
     };
 
-    // Use --file option, otherwise default
-    let tags_file = match matches.opt_str("f") {
-        Some(f) => f,
-        None => String::from(DEFAULT_TAGS_LOCATION),
+    // Use --file option, otherwise default to DEFAULT_TAGS_FILE
+    // Turn it into an absolute path
+    let tags_file = PathBuf::from(
+        matches
+        .opt_str("f")
+        .unwrap_or(String::from(DEFAULT_TAGS_FILE))
+    );
+
+    let tags_file_path = match tags_file.canonicalize() {
+        Ok(p) => p,
+        Err(e) => {
+            println!("Error with file '{}': {}", tags_file.display(), e);
+            print_usage(&program, opts);
+            return
+        },
     };
 
-    println!("Running query '{}' on file {}", query, tags_file);
+    println!("Running query '{}' on file {}", query, tags_file_path.display());
 }
 
 
@@ -50,4 +63,3 @@ fn print_usage(program: &str, opts: Options) {
     let brief = format!("Usage: {} [options] QUERY", program);
     print!("{}", opts.usage(&brief));
 }
-
