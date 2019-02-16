@@ -4,5 +4,6 @@ pub enum Token {
     NOT,
     AND,
     END,
+    TAG(String),
 }
 
