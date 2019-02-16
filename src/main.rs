@@ -1,6 +1,11 @@
+mod lexer;
+mod token;
+mod query;
+
 use getopts::Options;
 use std::env;
 use std::path::{PathBuf};
+use crate::query::Query;
 
 const DEFAULT_TAGS_FILE: &str = ".tags";
 
@@ -33,7 +38,7 @@ fn main() {
     let query = if !matches.free.is_empty() {
         matches.free[0].clone()
     } else {
-        println!("Error: QUERY not specified");
+        eprintln!("Error: QUERY not specified");
         print_usage(&program, opts);
         return;
     };
@@ -49,13 +54,15 @@ fn main() {
     let tags_file_path = match tags_file.canonicalize() {
         Ok(p) => p,
         Err(e) => {
-            println!("Error with file '{}': {}", tags_file.display(), e);
+            eprintln!("Error with file '{}': {}", tags_file.display(), e);
             print_usage(&program, opts);
             return
         },
     };
 
+    // Parse and run query
     println!("Running query '{}' on file {}", query, tags_file_path.display());
+    Query::from(&query);
 }
 
 
