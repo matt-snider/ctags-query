@@ -1,6 +1,7 @@
 mod lexer;
 mod token;
 mod query;
+mod tagfile;
 
 use getopts::Options;
 use std::env;
