@@ -2,7 +2,17 @@ use std::io::{self, BufRead, BufReader};
 use std::path::{PathBuf};
 use std::fs::File;
 
-pub fn load(filepath: &str) -> io::Result<Vec<(Location, Tag)>> {
+
+#[derive(Debug, PartialEq)]
+pub struct TaggedLocation {
+    tag: String, 
+    file: PathBuf,
+    lineno: usize,
+    header: String,
+}
+
+
+pub fn load(filepath: &str) -> io::Result<Vec<TaggedLocation>> {
     let file = File::open(filepath)?;
     let buf = BufReader::new(file);
 
@@ -21,33 +31,17 @@ pub fn load(filepath: &str) -> io::Result<Vec<(Location, Tag)>> {
 }
 
 
-fn read_line(line: &str) -> Option<(Location, Tag)> {
+fn read_line(line: &str) -> Option<TaggedLocation> {
     let parts: Vec<&str> = line.split('\t').collect();
-    let tag = parts[0];
-    let filename = parts[1];
-    let lineno = parts[2].replace(";\"","");
-    let header = parts[3];
+    let tag = String::from(parts[0]);
+    let file = PathBuf::from(parts[1]);
+    let lineno: usize = parts[2].replace(";\"","").parse().unwrap();
+    let header = String::from(parts[3]);
 
-    Some((
-        Location {
-            file: PathBuf::from(filename.clone()),
-            lineno: lineno.parse().unwrap(),
-            header: String::from(header),
-        },
-        Tag { name: String::from(tag) }
-    ))
+    Some(TaggedLocation {
+        tag,
+        file,
+        lineno,
+        header,
+    })
 }
-
-
-#[derive(Debug, PartialEq)]
-pub struct Tag {
-    name: String,
-}
-
-#[derive(Debug, PartialEq)]
-pub struct Location {
-    file: PathBuf,
-    lineno: usize,
-    header: String,
-}
-
