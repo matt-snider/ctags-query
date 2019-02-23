@@ -2,26 +2,17 @@ use std::io::{self, BufRead, BufReader};
 use std::path::{PathBuf};
 use std::fs::File;
 
-
 pub type Tag = String;
-
-
-#[derive(Clone, Debug, PartialEq)]
-pub struct TaggedLocation {
-    pub tag: Tag, 
-    pub location: Location,
-}
-
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Location {
     pub file: PathBuf,
-    pub lineno: usize,
-    pub header: String,
+    pub address: String,
+    pub extra: String,
 }
 
-
-pub fn from_file<P>(path: P) -> io::Result<Vec<TaggedLocation>> 
+/// Read the tag information from a CTags-style file
+pub fn from_file<P>(path: P) -> io::Result<Vec<(Tag, Location)>> 
 where P: Into<PathBuf>
 {
     let file = File::open(path.into())?;
@@ -30,31 +21,37 @@ where P: Into<PathBuf>
     let mut tagged_locations = Vec::new();
     for line in buf.lines().skip(1) {
         let line = line?;
-        let tagged_location = match read_line(&line) {
-            Some(tl) => tl,
-            None => panic!(""),
-        };
-
-        tagged_locations.push(tagged_location);
+        tagged_locations.push(read_line(&line));
     }
 
     Ok(tagged_locations)
 }
 
-
-fn read_line(line: &str) -> Option<TaggedLocation> {
+/// Read a line from a tags file producing a tuple (Tag, Location)
+///
+/// A tags file has the following format based on CTags:
+///
+///    {tagname} {TAB} {tagfile} {TAB} {tagaddress} {COMMENT} [{extrafield}...]
+///
+/// {tagname}: is the identifier/tag
+/// {tagfile}: the file containing {tagname} (absolute or relative)
+/// {tagaddress}: an ex command that will position the user at the tagged location
+/// {extrafield} (optional): each field consists of <TAB>{fieldname}:{value} and
+/// allows extra application-specified tag information to be specified
+/// {COMMENT}: `;"` which indicates the end of the standard fields
+/// {TAB}: a tab character
+///
+/// See `:help tags-file-format` for more info.
+fn read_line(line: &str) -> (Tag, Location) {
     let parts: Vec<&str> = line.split('\t').collect();
     let tag = String::from(parts[0]);
     let file = PathBuf::from(parts[1]);
-    let lineno: usize = parts[2].replace(";\"","").parse().unwrap();
-    let header = String::from(parts[3]);
+    let address = parts[2].replace(";\"","");
+    let extra = String::from(parts[3]);
 
-    Some(TaggedLocation {
-        tag,
-        location: Location { 
-            file,
-            lineno,
-            header,
-        },
+    (tag, Location { 
+        file,
+        address,
+        extra,
     })
 }
