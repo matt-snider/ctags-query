@@ -1,3 +1,5 @@
+use std::io;
+
 use crate::lexer::Lexer;
 use crate::tags::Tag;
 use crate::token::Token;
@@ -7,13 +9,6 @@ pub struct Parser<'a> {
     lexer: Lexer<'a>,
     curr_token: Token,
     next_token: Token,
-}
-
-pub type Result<T> = std::result::Result<T, Error>;
-
-#[derive(Debug, PartialEq)]
-pub enum Error {
-    UnexpectedToken(String),
 }
 
 impl<'a> Parser<'a> {
@@ -91,3 +86,21 @@ impl<'a> Parser<'a> {
     }
 }
 
+
+pub type Result<T> = std::result::Result<T, Error>;
+
+#[derive(Debug, PartialEq)]
+pub enum Error {
+    UnexpectedToken(String),
+}
+
+impl From<Error> for io::Error {
+    fn from(err: Error) -> io::Error {
+        match err {
+            Error::UnexpectedToken(s) => io::Error::new(
+                io::ErrorKind::InvalidInput,
+                s
+            ),
+        }
+    }
+}

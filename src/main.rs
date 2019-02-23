@@ -1,4 +1,5 @@
 mod lexer;
+mod matcher;
 mod parser;
 mod tags;
 mod token;
@@ -6,14 +7,16 @@ mod query;
 
 use getopts::Options;
 use std::env;
+use std::io;
 use std::path::{PathBuf};
 
 use crate::parser::Parser;
+use crate::matcher::Matcher;
 
 const DEFAULT_TAGS_FILE: &str = ".tags";
 
 
-fn main() {
+fn main() -> io::Result<()> {
     let args: Vec<String> = env::args().collect();
     let program = args[0].clone();
 
@@ -34,7 +37,7 @@ fn main() {
     // Check if help was requested
     if matches.opt_present("h") {
         print_usage(&program, opts);
-        return;
+        return Ok(());
     }
 
     // Ensure a query was passed
@@ -43,7 +46,7 @@ fn main() {
     } else {
         eprintln!("Error: QUERY not specified");
         print_usage(&program, opts);
-        return;
+        return Ok(());
     };
 
     // Use --file option, otherwise default to DEFAULT_TAGS_FILE
@@ -53,22 +56,20 @@ fn main() {
         .opt_str("f")
         .unwrap_or(String::from(DEFAULT_TAGS_FILE))
     );
+    let tags_file_path = tags_file.canonicalize()?; 
 
-    let tags_file_path = match tags_file.canonicalize() {
-        Ok(p) => p,
-        Err(e) => {
-            eprintln!("Error with file '{}': {}", tags_file.display(), e);
-            print_usage(&program, opts);
-            return
-        },
-    };
-
-    // Parse and run query
+    // Parse query
     let mut p = Parser::new(&query);
-    match p.parse() {
-        Ok(q) => println!("Parse: {:?}", q),
-        Err(e) => eprintln!("Error: {:?}", e),
-    };
+    let query = p.parse()?;
+    println!("Got query: {:?}", query);
+
+    // Get the tags from the file
+    let tagged_locations = tags::from_file(tags_file_path)?;
+    let matcher = Matcher::new(tagged_locations);
+    let matches = matcher.get_matches(query);
+    println!("Matches: {:?}", matches);
+
+    Ok(())
 }
 
 

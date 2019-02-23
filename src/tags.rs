@@ -6,14 +6,14 @@ use std::fs::File;
 pub type Tag = String;
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct TaggedLocation {
     pub tag: Tag, 
     pub location: Location,
 }
 
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct Location {
     pub file: PathBuf,
     pub lineno: usize,
