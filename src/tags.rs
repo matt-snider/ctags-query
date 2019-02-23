@@ -3,17 +3,28 @@ use std::path::{PathBuf};
 use std::fs::File;
 
 
+pub type Tag = String;
+
+
 #[derive(Debug, PartialEq)]
 pub struct TaggedLocation {
-    tag: String, 
-    file: PathBuf,
-    lineno: usize,
-    header: String,
+    pub tag: Tag, 
+    pub location: Location,
 }
 
 
-pub fn load(filepath: &str) -> io::Result<Vec<TaggedLocation>> {
-    let file = File::open(filepath)?;
+#[derive(Debug, PartialEq)]
+pub struct Location {
+    pub file: PathBuf,
+    pub lineno: usize,
+    pub header: String,
+}
+
+
+pub fn from_file<P>(path: P) -> io::Result<Vec<TaggedLocation>> 
+where P: Into<PathBuf>
+{
+    let file = File::open(path.into())?;
     let buf = BufReader::new(file);
 
     let mut tagged_locations = Vec::new();
@@ -40,8 +51,10 @@ fn read_line(line: &str) -> Option<TaggedLocation> {
 
     Some(TaggedLocation {
         tag,
-        file,
-        lineno,
-        header,
+        location: Location { 
+            file,
+            lineno,
+            header,
+        },
     })
 }
