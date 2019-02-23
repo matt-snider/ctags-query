@@ -1,10 +1,11 @@
+use std::fs::File;
+use std::hash::{Hash, Hasher};
 use std::io::{self, BufRead, BufReader};
 use std::path::{PathBuf};
-use std::fs::File;
 
 pub type Tag = String;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug)]
 pub struct Location {
     pub file: PathBuf,
     pub address: String,
@@ -55,3 +56,19 @@ fn read_line(line: &str) -> (Tag, Location) {
         extra,
     })
 }
+
+impl Hash for Location {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.file.hash(state);
+        self.address.hash(state);
+    }
+}
+
+impl PartialEq for Location {
+    fn eq(&self, other: &Location) -> bool {
+        self.file == other.file && self.address == other.address
+    }
+}
+
+impl Eq for Location {}
+

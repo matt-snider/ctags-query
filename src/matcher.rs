@@ -1,11 +1,11 @@
+use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
-use std::collections::HashMap;
 
 use crate::tags::{Location, Tag};
 use crate::query::Query;
 
 pub struct Matcher {
-    by_tag: HashMap<Tag, Vec<Location>>,
+    by_tag: HashMap<Tag, HashSet<Location>>,
 }
 
 
@@ -15,11 +15,11 @@ impl Matcher {
 
         for (tag, location) in tagged_locations {
             if !by_tag.contains_key(&tag) {
-                by_tag.insert(tag.clone(), Vec::new());
+                by_tag.insert(tag.clone(), HashSet::new());
             }
 
             let locs = by_tag.get_mut(&tag).unwrap();
-            locs.push(location);
+            locs.insert(location);
         }
 
         Matcher { by_tag }
