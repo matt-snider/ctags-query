@@ -7,7 +7,7 @@ pub type Tag = String;
 
 #[derive(Clone, Debug)]
 pub struct Location {
-    pub file: PathBuf,
+    pub file: String,
     pub address: String,
     pub extra: String,
 }
@@ -46,7 +46,7 @@ where P: Into<PathBuf>
 fn read_line(line: &str) -> (Tag, Location) {
     let parts: Vec<&str> = line.split('\t').collect();
     let tag = String::from(parts[0]);
-    let file = PathBuf::from(parts[1]);
+    let file = String::from(parts[1]);
     let address = parts[2].replace(";\"","");
     let extra = String::from(parts[3]);
 
