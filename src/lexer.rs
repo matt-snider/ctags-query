@@ -8,9 +8,10 @@ pub struct Lexer<'a> {
 
 
 impl<'a> Lexer<'a> {
-    pub fn new(input: &'a str) -> Lexer<'a> {
+    pub fn new(input: &'a str) -> Lexer {
+        let input = input.chars();
         let mut l = Lexer {
-            input: input.chars(),
+            input,
             ch: '\0',
         };
         l.read_char();

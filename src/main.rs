@@ -1,4 +1,5 @@
 mod lexer;
+mod parser;
 mod tags;
 mod token;
 mod query;
@@ -6,7 +7,8 @@ mod query;
 use getopts::Options;
 use std::env;
 use std::path::{PathBuf};
-use crate::query::Query;
+
+use crate::parser::Parser;
 
 const DEFAULT_TAGS_FILE: &str = ".tags";
 
@@ -62,8 +64,11 @@ fn main() {
     };
 
     // Parse and run query
-    println!("Running query '{}' on file {}", query, tags_file_path.display());
-    Query::from(&query);
+    let mut p = Parser::new(&query);
+    match p.parse() {
+        Ok(q) => println!("Parse: {:?}", q),
+        Err(e) => eprintln!("Error: {:?}", e),
+    };
 }
 
 
