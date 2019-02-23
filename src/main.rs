@@ -63,11 +63,13 @@ fn main() -> io::Result<()> {
     let query = p.parse()?;
     println!("Got query: {:?}", query);
 
-    // Get the tags from the file
+    // Get the tags from the file and find matches
     let tagged_locations = tags::from_file(tags_file_path)?;
     let matcher = Matcher::new(tagged_locations);
-    let matches = matcher.get_matches(query);
-    println!("Matches: {:?}", matches);
+    println!("Matches: ");
+    for m in  matcher.get_matches(query) {
+        println!("- {}:{} {}", m.file, m.address, m.extra);
+    }
 
     Ok(())
 }
