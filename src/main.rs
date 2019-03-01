@@ -61,14 +61,12 @@ fn main() -> io::Result<()> {
     // Parse query
     let mut p = Parser::new(&query);
     let query = p.parse()?;
-    println!("Got query: {:?}", query);
 
     // Get the tags from the file and find matches
     let tagged_locations = tags::from_file(tags_file_path)?;
     let matcher = Matcher::new(tagged_locations);
-    println!("Matches: ");
     for m in  matcher.get_matches(query) {
-        println!("- {}:{} {}", m.file, m.address, m.extra);
+        println!("{}\t{}\t{}", m.file, m.address, m.extra);
     }
 
     Ok(())
