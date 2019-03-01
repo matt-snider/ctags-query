@@ -2,6 +2,8 @@
 name = "ctags-query"
 version = "0.1.0"
 authors = ["Matt Snider <matt.snider@protonmail.com>"]
+description = "A tool to query ctags with simple boolean expressions."
+publish = false
 edition = "2018"
 
 [dependencies]

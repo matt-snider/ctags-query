@@ -1,6 +1,6 @@
 # ctags-query
 
-A tool to allow querying ctags with a simple language. 
+A tool to query ctags with simple boolean expressions. 
 
 For example, to find locations tagged with `foo`, `bar`, but _not_ `buzz`:
 
