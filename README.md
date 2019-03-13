@@ -6,9 +6,9 @@ For example, to find locations tagged with `foo`, `bar`, but _not_ `buzz`:
 
 ```sh
 $ ctags-query 'foo&bar&!buzz'
-- path/to/fileX:10 
-- path/to/fileY:50 
-- path/to/fileZ:165 
+path/to/fileX:10
+path/to/fileY:50
+path/to/fileZ:165
 ```
 
 I'm not sure how useful this is for a regular ctags file, because that wasn't my [motivation](#Motivation), but hopefully it can be useful for other uses as well.
