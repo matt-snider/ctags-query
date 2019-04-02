@@ -24,9 +24,14 @@ impl Matcher {
     }
 
     pub fn get_matches(&self, query: Query) -> Vec<&Location> {
-        self.execute(query).iter()
+        let mut matches: Vec<&Location> = self
+            .execute(query)
+            .iter()
             .cloned()
-            .collect()
+            .collect();
+        matches.sort();
+
+        matches
     }
 
     // Execute the given query.
@@ -76,4 +81,3 @@ impl Matcher {
             .collect()
     }
 }
-
