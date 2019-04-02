@@ -23,9 +23,9 @@ impl Matcher {
         Matcher { by_tag }
     }
 
-    pub fn get_matches(&self, query: Query) -> Vec<&Location> {
+    pub fn execute(&self, query: Query) -> Vec<&Location> {
         let mut matches: Vec<&Location> = self
-            .execute(query)
+            .do_execute(query)
             .iter()
             .cloned()
             .collect();
@@ -38,7 +38,7 @@ impl Matcher {
     //
     // Note: we call `clone()` a lot in the following code, but we are cloning
     // references, not the `Location` object (it doesn't even implement `Clone`)
-    fn execute(&self, query: Query) -> HashSet<&Location> {
+    fn do_execute(&self, query: Query) -> HashSet<&Location> {
         match query {
             Query::Present(tag) => {
                 match self.by_tag.get(&tag) {
@@ -49,7 +49,7 @@ impl Matcher {
                 }
             },
             Query::Absent(tag) => {
-                let where_present = self.execute(Query::Present(tag));
+                let where_present = self.do_execute(Query::Present(tag));
 
                 self.all_locations()
                     .difference(&where_present)
@@ -57,16 +57,16 @@ impl Matcher {
                     .collect()
             },
             Query::And(q1, q2) => {
-                let a = self.execute(*q1);
-                let b = self.execute(*q2);
+                let a = self.do_execute(*q1);
+                let b = self.do_execute(*q2);
 
                 a.intersection(&b)
                     .cloned()
                     .collect()
             },
             Query::Or(q1, q2) => {
-                let a = self.execute(*q1);
-                let b = self.execute(*q2);
+                let a = self.do_execute(*q1);
+                let b = self.do_execute(*q2);
 
                 a.union(&b)
                     .cloned()

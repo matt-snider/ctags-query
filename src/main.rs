@@ -66,7 +66,7 @@ fn main() -> io::Result<()> {
     // Get the tags from the file and find matches
     let tagged_locations = tags::from_file(tags_file_path)?;
     let matcher = Matcher::new(tagged_locations);
-    for m in  matcher.get_matches(query) {
+    for m in  matcher.execute(query) {
         println!("{}\t{}\t{}", m.file, m.address, m.extra);
     }
 
