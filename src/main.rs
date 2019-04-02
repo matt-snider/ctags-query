@@ -1,4 +1,5 @@
 mod lexer;
+mod location;
 mod matcher;
 mod parser;
 mod tags;

@@ -1,20 +1,14 @@
 use std::fs::File;
-use std::hash::{Hash, Hasher};
 use std::io::{self, BufRead, BufReader};
 use std::path::{PathBuf};
 
+use crate::location::Location;
+
 pub type Tag = String;
 
-#[derive(Debug)]
-pub struct Location {
-    pub file: String,
-    pub address: String,
-    pub extra: String,
-}
-
 /// Read the tag information from a CTags-style file
-pub fn from_file<P>(path: P) -> io::Result<Vec<(Tag, Location)>> 
-where P: Into<PathBuf>
+pub fn from_file<P>(path: P) -> io::Result<Vec<(Tag, Location)>>
+    where P: Into<PathBuf>
 {
     let file = File::open(path.into())?;
     let buf = BufReader::new(file);
@@ -56,19 +50,4 @@ fn read_line(line: &str) -> (Tag, Location) {
         extra,
     })
 }
-
-impl Hash for Location {
-    fn hash<H: Hasher>(&self, state: &mut H) {
-        self.file.hash(state);
-        self.address.hash(state);
-    }
-}
-
-impl PartialEq for Location {
-    fn eq(&self, other: &Location) -> bool {
-        self.file == other.file && self.address == other.address
-    }
-}
-
-impl Eq for Location {}
 

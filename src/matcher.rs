@@ -1,7 +1,8 @@
 use std::collections::{HashMap, HashSet};
 use std::vec::Vec;
 
-use crate::tags::{Location, Tag};
+use crate::location::Location;
+use crate::tags::Tag;
 use crate::query::Query;
 
 pub struct Matcher {
