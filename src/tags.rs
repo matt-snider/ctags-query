@@ -5,7 +5,7 @@ use std::path::{PathBuf};
 
 pub type Tag = String;
 
-#[derive(Clone, Debug)]
+#[derive(Debug)]
 pub struct Location {
     pub file: String,
     pub address: String,
