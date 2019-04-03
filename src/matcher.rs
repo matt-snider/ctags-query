@@ -3,7 +3,7 @@ use std::vec::Vec;
 
 use crate::location::Location;
 use crate::tags::Tag;
-use crate::query::Query;
+use crate::query::{PartialQuery, PartialQueryOperator, Query};
 
 pub struct Matcher {
     locations_by_tag: HashMap<Tag, HashSet<Location>>,
@@ -37,6 +37,7 @@ impl Matcher {
         }
     }
 
+    /// Execute a `Query` returning a sorted list of matched file locations.
     pub fn execute(&self, query: Query) -> Vec<&Location> {
         let mut matches: Vec<&Location> = self
             .do_execute(query)
@@ -45,6 +46,48 @@ impl Matcher {
             .collect();
         matches.sort();
         matches
+    }
+
+    /// Return a list of potential tags based on an initial query and operation.
+    pub fn suggest(&self, partial_query: PartialQuery) -> Vec<&Tag> {
+        // From the matching locations, we can determine which tags can be used.
+        //
+        // * AND: this will be any tag used at a location in `matching_locations`
+        // * OR: this will be any tag since it's independant
+        //
+        // NOTE: OR is currently very simple because we have no parentheses
+        // (or precedence) but we'll need to give more thought later.
+        use PartialQueryOperator::*;
+        let matching_tags: HashSet<&Tag> = match partial_query.operator {
+            AND => {
+                self.do_execute(partial_query.query)
+                    .iter()
+                    .filter_map(|loc| self.tags_by_location.get(&loc))
+                    .flatten()
+                    .collect()
+            },
+            OR  => {
+                self.all_tags()
+            },
+        };
+
+        // Now account for the text fragment if it is present
+        let mut matching_tags: Vec<&Tag> = match partial_query.fragment {
+            Some(text) =>
+                matching_tags
+                .iter()
+                .filter(|t| t.starts_with(&text))
+                .cloned()
+                .collect(),
+            None => matching_tags
+                .iter()
+                .cloned()
+                .collect(),
+        };
+
+        // Sort the tags and return
+        matching_tags.sort();
+        matching_tags
     }
 
     // Execute the given query.
@@ -89,9 +132,14 @@ impl Matcher {
     }
 
     fn all_locations(&self) -> HashSet<&Location> {
+        self.tags_by_location
+            .keys()
+            .collect()
+    }
+
+    fn all_tags(&self) -> HashSet<&Tag> {
         self.locations_by_tag
-            .values()
-            .flatten()
+            .keys()
             .collect()
     }
 }
