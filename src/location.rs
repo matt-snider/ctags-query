@@ -1,7 +1,7 @@
 use std::cmp::Ordering;
 use std::hash::{Hash, Hasher};
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub struct Location {
     pub file: String,
     pub address: String,

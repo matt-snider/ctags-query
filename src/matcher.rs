@@ -6,21 +6,35 @@ use crate::tags::Tag;
 use crate::query::Query;
 
 pub struct Matcher {
-    by_tag: HashMap<Tag, HashSet<Location>>,
+    locations_by_tag: HashMap<Tag, HashSet<Location>>,
+    tags_by_location: HashMap<Location, HashSet<Tag>>,
 }
 
 
 impl Matcher {
     pub fn new(tagged_locations: Vec<(Tag, Location)>) -> Matcher {
-        let mut by_tag = HashMap::new();
+        let mut locations_by_tag = HashMap::new();
+        let mut tags_by_location = HashMap::new();
 
+        // Build two lookup tables:
+        // * all locations that each tag is found at
+        // * all tags at each location
         for (tag, location) in tagged_locations {
-            by_tag.entry(tag)
+            locations_by_tag
+                .entry(tag.clone())
                 .or_insert(HashSet::new())
-                .insert(location);
+                .insert(location.clone());
+
+            tags_by_location
+                .entry(location)
+                .or_insert(HashSet::new())
+                .insert(tag);
         }
 
-        Matcher { by_tag }
+        Matcher {
+            locations_by_tag,
+            tags_by_location,
+        }
     }
 
     pub fn execute(&self, query: Query) -> Vec<&Location> {
@@ -30,18 +44,17 @@ impl Matcher {
             .cloned()
             .collect();
         matches.sort();
-
         matches
     }
 
     // Execute the given query.
     //
     // Note: we call `clone()` a lot in the following code, but we are cloning
-    // references, not the `Location` object (it doesn't even implement `Clone`)
+    // references, not the `Location` object.
     fn do_execute(&self, query: Query) -> HashSet<&Location> {
         match query {
             Query::Present(tag) => {
-                match self.by_tag.get(&tag) {
+                match self.locations_by_tag.get(&tag) {
                     Some(locations) => locations
                         .iter() 
                         .collect(),
@@ -76,7 +89,8 @@ impl Matcher {
     }
 
     fn all_locations(&self) -> HashSet<&Location> {
-        self.by_tag.values()
+        self.locations_by_tag
+            .values()
             .flatten()
             .collect()
     }
