@@ -20,15 +20,18 @@ fn from_buf<B>(buf: B) -> io::Result<Vec<(Tag, Location)>>
     where B: BufRead
 {
     let mut tagged_locations = Vec::new();
-    for line in buf.lines().skip(1) {
+    let mut line_num = 0;
+    for line in buf.lines() {
         let line = line?;
+        line_num += 1;
         if is_header(&line) {
             continue;
         }
 
-        let loc = read_line(&line).ok_or(
-            io::Error::new(io::ErrorKind::Other, format!("Failed to parse line: '{}'", line))
-        )?;
+        let loc = read_line(&line).ok_or(io::Error::new(
+            io::ErrorKind::Other,
+            format!("Failed to parse line {}: '{}'", line_num, line)
+        ))?;
         tagged_locations.push(loc);
     }
 
@@ -114,8 +117,7 @@ mod tests {
 
     #[test]
     fn test_from_buf() {
-        let buf = b"
-!_TAG_FILE_FORMAT\t2
+        let buf = b"!_TAG_FILE_FORMAT\t2
 !_TAG_FILE_SORTED\t1
 !_TAG_OUTPUT_MODE\tvimwiki-tags
 tag1\tpath/to/file1.md\t21;\"\tvimwiki:path/to/file1.md\\tpath/to/file1.md#header1
@@ -149,16 +151,15 @@ tag2\tpath/to/file2.md\t22;\"\tvimwiki:path/to/file2.md\\tpath/to/file2.md#heade
     }
 
     #[test]
-    fn test_from_buf_bad_format_line_3() {
-        let buf = b"
-!_TAG_FILE_FORMAT\t2
+    fn test_from_buf_bad_format_line_4() {
+        let buf = b"!_TAG_FILE_FORMAT\t2
 tag1\tpath/to/file1.md\t21;\"\tvimwiki:path/to/file1.md\\tpath/to/file1.md#header1
 tag1\tpath/to/file2.md\t11;\"\tvimwiki:path/to/file2.md\\tpath/to/file2.md#header1
 this is a bad line
 " as &[u8];
         match from_buf(buf) {
             Err(e) if e.kind() == io::ErrorKind::Other => {
-                assert_eq!(e.to_string(), "Failed to parse line: 'this is a bad line'");
+                assert_eq!(e.to_string(), "Failed to parse line 4: 'this is a bad line'");
             },
             Err(e) => assert!(false, format!("Expected a different io::Error, got {}", e)),
             Ok(_) => assert!(false, "Expected line 3 to cause error"),
